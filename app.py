@@ -8,6 +8,13 @@ from plotly.subplots import make_subplots
 from tenacity import retry, stop_after_attempt, wait_exponential
 import time
 
+# Add page configuration at the start
+st.set_page_config(
+    page_title="Chatbase Analytics",
+    page_icon="📊",
+    layout="wide"
+)
+
 def process_conversations(data):
     conversation_details = []
     
