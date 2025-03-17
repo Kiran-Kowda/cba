@@ -134,6 +134,13 @@ def main():
     
     uploaded_file = st.file_uploader("Choose a JSON file", type="json")
     
+    # Fix the file upload check condition
+    if (uploaded_file is not None and 
+        ('previous_file' not in st.session_state or 
+         st.session_state.get('previous_file') != getattr(uploaded_file, 'name', None))):
+        st.session_state.category_analysis_done = False
+        st.session_state.previous_file = uploaded_file.name
+    
     if uploaded_file is not None:
         try:
             data = json.load(uploaded_file)
@@ -239,22 +246,18 @@ def main():
             with tab4:
                 st.subheader("Question Category Analysis")
                 
-                if 'category_analysis_done' not in st.session_state:
-                    st.session_state.category_analysis_done = False
-                
-                if not st.session_state.category_analysis_done:
-                    if st.button("Analyze Question Categories"):
-                        try:
-                            # Remove the model parameter
-                            category_metrics, df_with_categories = get_category_metrics(df)
-                            
-                            # Save results in session state
-                            st.session_state.category_metrics = category_metrics
-                            st.session_state.df_with_categories = df_with_categories
-                            st.session_state.category_analysis_done = True
-                            
-                        except Exception as e:
-                            st.error(f"Error in category analysis: {str(e)}")
+                # Remove the session state check since we handle it at file upload
+                if st.button("Analyze Question Categories") or st.session_state.get('category_analysis_done', False):
+                    try:
+                        # Remove the model parameter
+                        category_metrics, df_with_categories = get_category_metrics(df)
+                        
+                        # Save results in session state
+                        st.session_state.category_metrics = category_metrics
+                        st.session_state.df_with_categories = df_with_categories
+                        st.session_state.category_analysis_done = True
+                    except Exception as e:
+                        st.error(f"Error in category analysis: {str(e)}")
                 
                 if st.session_state.category_analysis_done:
                     # Display category distribution
