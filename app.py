@@ -296,14 +296,32 @@ def main():
                     st.subheader("Category Breakdown")
                     st.dataframe(st.session_state.category_metrics)
                     
-                    # Download option
-                    csv_categories = st.session_state.df_with_categories.to_csv(index=False)
-                    st.download_button(
-                        label="📥 Download Categorized Questions",
-                        data=csv_categories,
-                        file_name=f'question_categories_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
-                        mime='text/csv',
-                    )
+                    # Display detailed question breakdown
+                    st.subheader("Question Details")
+                    question_details = st.session_state.df_with_categories[['User Question', 'Category']].copy()
+                    question_details.index = range(1, len(question_details) + 1)  # Add serial numbers
+                    question_details.index.name = 'S.No'
+                    st.dataframe(question_details.reset_index(), use_container_width=True)
+                    
+                    # Download options
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        csv_categories = st.session_state.category_metrics.to_csv(index=False)
+                        st.download_button(
+                            label="📥 Download Category Summary",
+                            data=csv_categories,
+                            file_name=f'category_summary_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
+                            mime='text/csv',
+                        )
+                    
+                    with col2:
+                        csv_details = question_details.to_csv()
+                        st.download_button(
+                            label="📥 Download Question Details",
+                            data=csv_details,
+                            file_name=f'question_details_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv',
+                            mime='text/csv',
+                        )
                 
         except Exception as e:
             st.error(f"Error processing file: {str(e)}")
