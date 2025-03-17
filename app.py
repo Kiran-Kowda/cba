@@ -5,7 +5,6 @@ from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import google.generativeai as genai
 from tenacity import retry, stop_after_attempt, wait_exponential
 import time
 
