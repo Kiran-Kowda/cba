@@ -71,10 +71,11 @@ def get_country_metrics(df):
     return country_metrics.sort_values('Questions', ascending=False)
 
 # Add these functions after your existing functions
-def setup_gemini():
-    GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-    genai.configure(api_key=GOOGLE_API_KEY)
-    return genai.GenerativeModel('gemini-2.0-flash-thinking-exp-01-21')
+# Remove this unused function
+# def setup_gemini():
+#     GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+#     genai.configure(api_key=GOOGLE_API_KEY)
+#     return genai.GenerativeModel('gemini-2.0-flash-thinking-exp-01-21')
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def analyze_question_category(question):
@@ -129,8 +130,8 @@ def get_category_metrics(df):
     return category_metrics, df
 
 def main():
-    st.title("Conversation Details Analyzer")
-    st.write("Upload your JSON file to analyze conversation details")
+    st.title("📊 Chatbase Conversations Analyzer")
+    st.write("📤 Upload the Chatbase JSON export file to analyze user conversation details")
     
     uploaded_file = st.file_uploader("Choose a JSON file", type="json")
     
@@ -147,7 +148,7 @@ def main():
             df = process_conversations(data)
             
             # Create tabs
-            tab1, tab2, tab3, tab4 = st.tabs(["Data View", "Daily Analytics", "Country Analytics", "Question Categories"])
+            tab1, tab2, tab3, tab4 = st.tabs(["📋 Full Data View", "📈 Daily Analytics", "🌎 Country Analytics", "🔍 Categorical Analysis"])
             
             with tab1:
                 # Original content
@@ -168,17 +169,17 @@ def main():
                     mime='text/csv',
                 )
                 
-                st.subheader("Quick Statistics")
+                st.subheader("⚡ Quick Statistics")
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Total Conversations", len(df))
+                    st.metric("💬 Total Conversations", len(df))
                 with col2:
-                    st.metric("Unique Countries", len(df['Country'].unique()))
+                    st.metric("🌍 Unique Countries", len(df['Country'].unique()))
                 with col3:
-                    st.metric("Average Score", f"{df['Score'].mean():.2f}")
+                    st.metric("⭐ Average Response Score", f"{df['Score'].mean():.2f}")
             
             with tab2:
-                st.subheader("Daily Usage Analytics")
+                st.subheader("📊 Daily Usage Analytics")
                 
                 # Get daily metrics
                 daily_metrics = get_daily_metrics(df)
@@ -188,7 +189,7 @@ def main():
                 st.line_chart(daily_metrics.set_index('Date'))
                 
                 # Display metrics as a table
-                st.subheader("Daily Breakdown")
+                st.subheader("📅 Daily Breakdown")
                 st.dataframe(daily_metrics.sort_values('Date', ascending=False))
                 
                 # Download daily metrics
@@ -201,13 +202,13 @@ def main():
                 )
             
             with tab3:
-                st.subheader("Country Usage Analytics")
+                st.subheader("🌎 Country Usage Analytics")
                 
                 # Get country metrics without date filtering
                 country_metrics = get_country_metrics(df)
                 
                 # Top countries metrics
-                st.subheader("Top Countries Overview")
+                st.subheader("🏆 Top Countries Overview")
                 top_metrics_col1, top_metrics_col2, top_metrics_col3 = st.columns(3)
                 
                 with top_metrics_col1:
@@ -228,7 +229,7 @@ def main():
                              f"{avg_questions:.1f}")
                 
                 # Detailed country breakdown
-                st.subheader("Country Breakdown")
+                st.subheader("🌍 Country Breakdown")
                 st.dataframe(
                     country_metrics,
                     use_container_width=True
@@ -244,10 +245,10 @@ def main():
                 )
             
             with tab4:
-                st.subheader("Question Category Analysis")
+                st.subheader("🔍 Question Category Analysis")
                 
-                # Remove the session state check since we handle it at file upload
-                if st.button("Analyze Question Categories") or st.session_state.get('category_analysis_done', False):
+                # Fix the button and analysis logic
+                if st.button("🔄 Analyze Question Categories"):
                     try:
                         # Remove the model parameter
                         category_metrics, df_with_categories = get_category_metrics(df)
@@ -256,10 +257,12 @@ def main():
                         st.session_state.category_metrics = category_metrics
                         st.session_state.df_with_categories = df_with_categories
                         st.session_state.category_analysis_done = True
+                        
                     except Exception as e:
                         st.error(f"Error in category analysis: {str(e)}")
                 
-                if st.session_state.category_analysis_done:
+                # Show results if analysis is done
+                if st.session_state.get('category_analysis_done', False):
                     # Display category distribution
                     fig = px.pie(st.session_state.category_metrics, 
                                values='Count',  # Use Count for correct proportions
@@ -293,11 +296,11 @@ def main():
                     st.plotly_chart(fig, use_container_width=True)
                     
                     # Display metrics table
-                    st.subheader("Category Breakdown")
+                    st.subheader("📊 Category Breakdown")
                     st.dataframe(st.session_state.category_metrics)
                     
                     # Display detailed question breakdown
-                    st.subheader("Question Details")
+                    st.subheader("📝 Question Details")
                     question_details = st.session_state.df_with_categories[['User Question', 'Category']].copy()
                     question_details.index = range(1, len(question_details) + 1)  # Add serial numbers
                     question_details.index.name = 'S.No'
